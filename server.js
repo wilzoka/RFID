@@ -8,10 +8,10 @@ const express = require('express')
 app.use(cookieParser());
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 100000 }));
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
 });
 
 let ress;
@@ -51,25 +51,23 @@ let port = new SerialPort("COM4", {
 });
 
 port.on('data', function (data) {
-	if (!ress.headersSent) {
-		let hex = data.toString('hex', 7, 16);
-		switch (data.toString('hex').length) {
-			case 42://read
-				ress.send(Buffer.from(hex, 'hex').toString('utf8'));
-				clearInterval(interval);
-				busy = false;
-				break;
-			case 54://write
-				ress.send(Buffer.from(hex, 'hex').toString('utf8'));
-				clearInterval(interval);
-				busy = false;
-				break;
-
-		}
-	} else {
-		clearInterval(interval);
-		busy = false;
-	}
+    if (!ress.headersSent) {
+        switch (data.toString('hex').length) {
+            case 42://read
+                ress.send(Buffer.from(data.toString('hex', 7, 16), 'hex').toString('utf8'));
+                clearInterval(interval);
+                busy = false;
+                break;
+            case 54://write
+                ress.send(Buffer.from(data.toString('hex', 9, 18), 'hex').toString('utf8'));
+                clearInterval(interval);
+                busy = false;
+                break;
+        }
+    } else {
+        clearInterval(interval);
+        busy = false;
+    }
 });
 
 function calc_cksum8(N) {
