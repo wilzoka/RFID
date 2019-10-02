@@ -4,8 +4,6 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "body-parser": "1.18.3",
-    "cookie-parser": "1.4.3",
     "express": "4.16.4",
     "serialport": "^7.1.0"
   }

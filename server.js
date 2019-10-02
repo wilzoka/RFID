@@ -1,23 +1,17 @@
-const express = require('express')
-    , bodyParser = require('body-parser')
-    , cookieParser = require('cookie-parser')
-    , app = express()
+const app = require('express')()
     , http = require('http').Server(app)
     , SerialPort = require('serialport')
+    ;
 
-app.use(cookieParser());
-app.use(bodyParser.json({ limit: '5mb' }));
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 100000 }));
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
-
-let ress;
-let interval;
-let intervaltime = 350;
-let busy = false;
+var ress;
+var interval;
+var intervaltime = 350;
+var busy = false;
 app.get('/read', function (req, res) {
     if (busy) {
         res.status(503).send();
@@ -42,16 +36,22 @@ app.get('/write/:id', function (req, res) {
         }, intervaltime);
     }
 });
+app.get('/cancel', function (req, res) {
+    clearInterval(interval);
+    busy = false;
+    if (ress && !ress.headersSent) {
+        ress.status(503).send();
+    }
+    res.send('OK');
+});
 http.listen(8082, function () {
     console.log('Server UP', 'PID ' + process.pid);
 });
-
-let port = new SerialPort("COM4", {
+var port = new SerialPort("COM4", {
     baudRate: 115200
 });
-
 port.on('data', function (data) {
-    if (!ress.headersSent) {
+    if (ress && !ress.headersSent) {
         switch (data.toString('hex').length) {
             case 42://read
                 ress.send(Buffer.from(data.toString('hex', 7, 16), 'hex').toString('utf8'));
@@ -69,7 +69,6 @@ port.on('data', function (data) {
         busy = false;
     }
 });
-
 function calc_cksum8(N) {
     strN = new String(N);
     strN = strN.toUpperCase();
