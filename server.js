@@ -8,10 +8,10 @@ app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
-var ress;
-var interval;
-var intervaltime = 350;
-var busy = false;
+let ress;
+let interval;
+const intervaltime = 350;
+let busy = false;
 app.get('/read', function (req, res) {
     if (busy) {
         res.status(503).send();
@@ -44,10 +44,10 @@ app.get('/cancel', function (req, res) {
     }
     res.send('OK');
 });
-http.listen(8082, function () {
+http.listen(process.env.NODE_PORT, function () {
     console.log('Server UP', 'PID ' + process.pid);
 });
-var port = new SerialPort("COM4", {
+const port = new SerialPort(process.env.COM, {
     baudRate: 115200
 });
 port.on('data', function (data) {
